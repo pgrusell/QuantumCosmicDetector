@@ -1,0 +1,11 @@
+# Compilation folder
+build/
+
+*~
+
+# Linux possible temporary files
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
