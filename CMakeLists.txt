@@ -1,24 +1,21 @@
-cmake_minimum_required(VERSION 3.13 FATAL_ERROR)  # CMake version check
+cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
-project(Simulation)                               # create projecjt
+project(tutorial)
 
-# Adding user interface and visualization packages
-find_package(Geant4 REQUIRED ui_all vis_all) 
+find_package(Geant4 REQUIRED ui_all vis_all)
 
-# Adding files from the path Geant4_use_file (bash variable)
 include(${Geant4_USE_FILE})
 
-# Compile all the source files (.cc files) in the project folder
-file(GLOB sources ${PROJECT_SOURCE_DIR}/*.cc)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
-# Compile all the header files (.cc files) in the project folder
-file(GLOB headers ${PROJECT_SOURCE_DIR}/*.hh)
+file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
+file(GLOB MACRO_FILES "macros/*.mac")
+file(COPY ${MACRO_FILES} DESTINATION ${CMAKE_BINARY_DIR}/)
 
-# Set a name for the executable
-add_executable(sim sim.cc ${sources} ${headers})
-
-# link labraries for later implementation
+add_executable(sim sim.cc ${sources})
 target_link_libraries(sim ${Geant4_LIBRARIES})
 
-# project_name DEPENDS executable 
-add_custom_target(Simulation DEPENDS sim)
+add_custom_target(Tutorial DEPENDS sim)
+
+
+
