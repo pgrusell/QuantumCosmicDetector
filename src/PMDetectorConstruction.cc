@@ -52,7 +52,7 @@ G4VPhysicalVolume *PMDetectorConstruction::Construct(){ // we are defining here 
     // first layer of scintillating bars
     G4int nBarsPlane1 = 60;
     G4double plane1Length = nBarsPlane1 * (barX1 + 2*coatingThickness); //912 mm
-    G4double startX1 = - plane1Length /2 ;
+    G4double startX1 = - (plane1Length + barX1 + 2*coatingThickness)  /2 ; // center in 0 ?
     G4double yPlane1 = 0.; // location of the first plane
 
     for (G4int i = 0; i < nBarsPlane1; i++) {
@@ -73,7 +73,7 @@ G4VPhysicalVolume *PMDetectorConstruction::Construct(){ // we are defining here 
     // second layer of scintillating bars
     G4int nBarsPlane2 = 90;
     G4double plane2Length = nBarsPlane2 * (barZ2 + 2*coatingThickness);
-    G4double startZ2 = - plane2Length/2;
+    G4double startZ2 = - (plane2Length + barZ2 + 2*coatingThickness)/2;
     G4double yPlane2 = -500.0 * mm; // location of the second plane
 
     for (G4int i = 0; i < nBarsPlane2; i++) {
