@@ -15,19 +15,19 @@ PMPrimaryGenerator::PMPrimaryGenerator(){
     // Particle direction
 
     G4double px = 0. ; 
-    G4double py = 0. ; 
-    G4double pz = 1. ;  // we make sure the particle is forwared in z direction
+    G4double py = -1. ; // we make sure the particle is forwared downwards
+    G4double pz = 0. ;  
 
     G4ThreeVector mom(px,py,pz);
 
     // Particle type
 
     G4ParticleTable *particleTable = G4ParticleTable::GetParticleTable();
-    G4ParticleDefinition *particle = particleTable -> FindParticle("gamma");
+    G4ParticleDefinition *particle = particleTable -> FindParticle("mu-");
 
     fParticleGun -> SetParticlePosition(pos);
     fParticleGun -> SetParticleMomentumDirection(mom);
-    fParticleGun -> SetParticleEnergy(1. * MeV);
+    fParticleGun -> SetParticleEnergy(4. * GeV);
     fParticleGun -> SetParticleDefinition(particle);
 
 }

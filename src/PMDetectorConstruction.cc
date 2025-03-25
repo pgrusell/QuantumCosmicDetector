@@ -40,13 +40,10 @@ G4VPhysicalVolume *PMDetectorConstruction::Construct(){ // we are defining here 
 
     // bar with coating for the first layer
     G4Box *solidBar1 = new G4Box("solidBar1", 0.5 * barX1, 0.5 * barY1, 0.5 * barZ1);
-    G4LogicalVolume *logicBar1 = new G4LogicalVolume(solidBar1, scintillatorMat, "logicBar1");
+    logicBar1 = new G4LogicalVolume(solidBar1, scintillatorMat, "logicBar1");
 
     G4Box *solidCoating1 = new G4Box("solidCoating1", 0.5 * (barX1 + 2 * coatingThickness), 0.5 * (barY1 + 2 * coatingThickness), 0.5 * barZ1);
     G4LogicalVolume *logicCoating1 = new G4LogicalVolume(solidCoating1, plasticMat, "logicCoating1");
-
-
-    // new G4PVPlacement(0, G4ThreeVector(0., 0., 0.), logicBar1, "physBar1", logicCoating1, false, 0, checkOverlaps);
 
 
     // first layer of scintillating bars
@@ -63,12 +60,10 @@ G4VPhysicalVolume *PMDetectorConstruction::Construct(){ // we are defining here 
 
     // bar with coating for the second layer
     G4Box *solidBar2 = new G4Box("solidBar2", 0.5 * barX2, 0.5 * barY2, 0.5 * barZ2);
-    G4LogicalVolume *logicBar2 = new G4LogicalVolume(solidBar2, scintillatorMat, "logicBar2");
+    logicBar2 = new G4LogicalVolume(solidBar2, scintillatorMat, "logicBar2");
 
     G4Box *solidCoating2 = new G4Box("solidCoating2", 0.5 * barX2, 0.5 * (barY2 + 2 * coatingThickness), 0.5 * (barZ2 + 2 * coatingThickness));
     G4LogicalVolume *logicCoating2 = new G4LogicalVolume(solidCoating2, plasticMat, "logicCoating2");
-
-    //new G4PVPlacement(0, G4ThreeVector(0., 0., 0.), logicBar2, "physBar2", logicCoating2, false, 0, checkOverlaps);
 
     // second layer of scintillating bars
     G4int nBarsPlane2 = 90;
@@ -78,10 +73,45 @@ G4VPhysicalVolume *PMDetectorConstruction::Construct(){ // we are defining here 
 
     for (G4int i = 0; i < nBarsPlane2; i++) {
         G4double posZ = startZ2 + i * (barZ2 + 2 * coatingThickness);
-        new G4PVPlacement(0, G4ThreeVector(0, startZ2, posZ), logicCoating2, "physCoatingBar2", logicWorld, false, i, checkOverlaps);
+        new G4PVPlacement(0, G4ThreeVector(0, yPlane2, posZ), logicCoating2, "physCoatingBar2", logicWorld, false, i, checkOverlaps);
     }
+    
+    G4SDManager *sdManager = G4SDManager::GetSDMpointer();
+    PMSensitiveDetector *sensDet = new PMSensitiveDetector("QmioSD");
+    sdManager->AddNewDetector(sensDet);
+
+    // Asignar el detector sensible a las barras
+    logicBar1->SetSensitiveDetector(sensDet);
+    logicBar2->SetSensitiveDetector(sensDet);
+    
+    ConstructSDandField();
 
     return physWorld;
 
-
 }
+
+
+void PMDetectorConstruction::ConstructSDandField(){
+
+    if (!logicBar1 || !logicBar2) {
+        G4cerr << "Error: logicBar1 o logicBar2 no están inicializados en ConstructSDandField()." << G4endl;
+        return;
+    };
+
+    G4SDManager *sdManager = G4SDManager::GetSDMpointer();
+
+    if (!sdManager->FindSensitiveDetector("QmioSD")) {
+        PMSensitiveDetector *sensDet = new PMSensitiveDetector("QmioSD");
+
+        sdManager->AddNewDetector(sensDet);
+
+        logicBar1->SetSensitiveDetector(sensDet);
+        logicBar2->SetSensitiveDetector(sensDet);
+    } else {
+        G4cerr << "Warning: Sensitive Detector QmioSD ya registrado en SDManager." << G4endl;
+    };
+    
+}
+
+
+

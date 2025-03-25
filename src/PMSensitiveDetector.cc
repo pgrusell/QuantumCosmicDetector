@@ -33,6 +33,8 @@ G4bool PMSensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory * ){
     if(fEnergyDeposited > 0){
 
         fTotalEnergyDeposited += fEnergyDeposited;
+
+        G4cout << "Energy deposited in this step: " << fEnergyDeposited << " GeV" << G4endl;
     }
 
     return true;

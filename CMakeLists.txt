@@ -15,6 +15,8 @@ file(COPY ${MACRO_FILES} DESTINATION ${CMAKE_BINARY_DIR}/)
 add_executable(sim sim.cc ${sources})
 target_link_libraries(sim ${Geant4_LIBRARIES})
 
+#set(CMAKE_BUILD_TYPE Debug)
+
 add_custom_target(Tutorial DEPENDS sim)
 
 

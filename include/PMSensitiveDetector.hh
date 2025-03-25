@@ -18,7 +18,7 @@ class PMSensitiveDetector : public G4VSensitiveDetector{
         G4double fTotalEnergyDeposited;
 
         // HC : hits collection only important if you want to do analysis
-        // or reconstraction within G4
+        // or reconstraction within G4 
         virtual void Initialize(G4HCofThisEvent *) override;
         virtual void EndOfEvent(G4HCofThisEvent *) override;
 

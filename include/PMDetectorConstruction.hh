@@ -14,6 +14,12 @@
 #include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
 
+#include "G4VisAttributes.hh"
+#include "G4Color.hh"
+#include "G4SDManager.hh"
+
+#include "PMSensitiveDetector.hh"
+
 
 
 class PMDetectorConstruction : public G4VUserDetectorConstruction{
@@ -23,6 +29,15 @@ class PMDetectorConstruction : public G4VUserDetectorConstruction{
         virtual ~PMDetectorConstruction(); // virtual function cause its already defined in the parent class 
 
         virtual G4VPhysicalVolume *Construct();
+
+
+    private:
+        
+        G4LogicalVolume *logicBar1;  
+        G4LogicalVolume *logicBar2; 
+
+        virtual void ConstructSDandField();
+
 
 };
 
