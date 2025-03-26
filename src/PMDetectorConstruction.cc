@@ -75,16 +75,6 @@ G4VPhysicalVolume *PMDetectorConstruction::Construct(){ // we are defining here 
         G4double posZ = startZ2 + i * (barZ2 + 2 * coatingThickness);
         new G4PVPlacement(0, G4ThreeVector(0, yPlane2, posZ), logicCoating2, "physCoatingBar2", logicWorld, false, i, checkOverlaps);
     }
-    
-    G4SDManager *sdManager = G4SDManager::GetSDMpointer();
-    PMSensitiveDetector *sensDet = new PMSensitiveDetector("QmioSD");
-    sdManager->AddNewDetector(sensDet);
-
-    // Asignar el detector sensible a las barras
-    logicBar1->SetSensitiveDetector(sensDet);
-    logicBar2->SetSensitiveDetector(sensDet);
-    
-    ConstructSDandField();
 
     return physWorld;
 
@@ -103,10 +93,11 @@ void PMDetectorConstruction::ConstructSDandField(){
     if (!sdManager->FindSensitiveDetector("QmioSD")) {
         PMSensitiveDetector *sensDet = new PMSensitiveDetector("QmioSD");
 
-        sdManager->AddNewDetector(sensDet);
-
         logicBar1->SetSensitiveDetector(sensDet);
         logicBar2->SetSensitiveDetector(sensDet);
+
+        sdManager->AddNewDetector(sensDet);
+
     } else {
         G4cerr << "Warning: Sensitive Detector QmioSD ya registrado en SDManager." << G4endl;
     };
