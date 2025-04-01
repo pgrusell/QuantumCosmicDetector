@@ -45,35 +45,57 @@ G4VPhysicalVolume *PMDetectorConstruction::Construct(){ // we are defining here 
     G4Box *solidCoating1 = new G4Box("solidCoating1", 0.5 * (barX1 + 2 * coatingThickness), 0.5 * (barY1 + 2 * coatingThickness), 0.5 * barZ1);
     G4LogicalVolume *logicCoating1 = new G4LogicalVolume(solidCoating1, plasticMat, "logicCoating1");
 
-
-    // first layer of scintillating bars
-    G4int nBarsPlane1 = 60;
-    G4double plane1Length = nBarsPlane1 * (barX1 + 2*coatingThickness); //912 mm
-    G4double startX1 = - (plane1Length + barX1 + 2*coatingThickness)  /2 ; // center in 0 ?
-    G4double yPlane1 = 0.; // location of the first plane
-
-    for (G4int i = 0; i < nBarsPlane1; i++) {
-        G4double posX = startX1 + i * (barX1+ 2 * coatingThickness);
-        new G4PVPlacement(0, G4ThreeVector(posX, yPlane1, 0), logicCoating1, "physCoatingBar1", logicWorld, false, i, checkOverlaps);
-    }
-
-
     // bar with coating for the second layer
     G4Box *solidBar2 = new G4Box("solidBar2", 0.5 * barX2, 0.5 * barY2, 0.5 * barZ2);
     logicBar2 = new G4LogicalVolume(solidBar2, scintillatorMat, "logicBar2");
-
+    
     G4Box *solidCoating2 = new G4Box("solidCoating2", 0.5 * barX2, 0.5 * (barY2 + 2 * coatingThickness), 0.5 * (barZ2 + 2 * coatingThickness));
     G4LogicalVolume *logicCoating2 = new G4LogicalVolume(solidCoating2, plasticMat, "logicCoating2");
 
+    // first layer of scintillating bars: aligned with Z direction. Y is fixed (height) and X varies with the bar
+    G4int nBarsPlane1 = 60;
+
+    G4double planeX1 = (barX1 + 2*coatingThickness)*nBarsPlane1; // dimension of the plane along X direction: 912 mm
+    G4double planeZ1 = barZ1;
+
+    // declaring the locations in which we will place the bars (b) and coatings (c)
+    // locations are declared in such a way that the coordinate is the central point of the object in that direction
+    // Y, Z locations will be fixed and we iterate over X direction to place the bars
+
+    G4double locY1 = 0.; // fixing Y location of the first plane
+    G4double locZ1 = 0.; 
+    G4double start_locXb1 = (- planeX1 + barX1) * 0.5;
+    G4double start_locXc1 = (- planeX1 + barX1 +2*coatingThickness) * 0.5;
+
+    for (G4int i = 1; i < nBarsPlane1+1; i++) {
+
+        G4double posXb = start_locXb1 + i * barX1;
+        G4double posXc = start_locXc1 + i * (barX1+ 2 * coatingThickness);
+        new G4PVPlacement(0, G4ThreeVector(posXc, locY1, locZ1), logicCoating1, "physCoatingBar1", logicWorld, false, i, checkOverlaps);
+        new G4PVPlacement(0, G4ThreeVector(posXb, locY1, locZ1), logicBar1, "physBar1", logicWorld, false, i, checkOverlaps);
+    }
+   
+
     // second layer of scintillating bars
     G4int nBarsPlane2 = 90;
-    G4double plane2Length = nBarsPlane2 * (barZ2 + 2*coatingThickness);
-    G4double startZ2 = - (plane2Length + barZ2 + 2*coatingThickness)/2;
-    G4double yPlane2 = -500.0 * mm; // location of the second plane
+
+    G4double planeZ2 = (barZ2 + 2*coatingThickness)*nBarsPlane2; // dimension of the plane along Z direction
+    G4double planeX2 = barX2;
+
+    // X, Y locations will be fixed and we iterate over Z direction to place the bars
+
+    G4double locY2 = -500 * mm; // fixing Y location of the first plane
+    G4double locX2 = 0.; 
+
+    G4double start_locZb2 = (- planeZ2 + barZ2) * 0.5;
+    G4double start_locZc2 = (- planeZ2 + barZ2 +2*coatingThickness) * 0.5;
+
 
     for (G4int i = 0; i < nBarsPlane2; i++) {
-        G4double posZ = startZ2 + i * (barZ2 + 2 * coatingThickness);
-        new G4PVPlacement(0, G4ThreeVector(0, yPlane2, posZ), logicCoating2, "physCoatingBar2", logicWorld, false, i, checkOverlaps);
+        G4double posZb = start_locZb2 + i * barZ2;
+        G4double posZc = start_locZc2 + i * (barZ2+ 2 * coatingThickness);
+        new G4PVPlacement(0, G4ThreeVector(locX2, locY2, posZc), logicCoating2, "physCoatingBar2", logicWorld, false, i, checkOverlaps);
+        new G4PVPlacement(0, G4ThreeVector(locX2, locY2, posZb), logicBar2, "physBar2", logicWorld, false, i, checkOverlaps);
     }
 
     return physWorld;
