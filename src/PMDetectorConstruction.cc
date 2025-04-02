@@ -64,15 +64,13 @@ G4VPhysicalVolume *PMDetectorConstruction::Construct(){ // we are defining here 
 
     G4double locY1 = 0.; // fixing Y location of the first plane
     G4double locZ1 = 0.; 
-    G4double start_locXb1 = (- planeX1 + barX1) * 0.5;
-    G4double start_locXc1 = (- planeX1 + barX1 +2*coatingThickness) * 0.5;
+    G4double start_locX1 = (- planeX1 + barX1) * 0.5;
 
-    for (G4int i = 1; i < nBarsPlane1+1; i++) {
+    for (G4int i = 0; i < nBarsPlane1; i++) {
 
-        G4double posXb = start_locXb1 + i * barX1;
-        G4double posXc = start_locXc1 + i * (barX1+ 2 * coatingThickness);
-        new G4PVPlacement(0, G4ThreeVector(posXc, locY1, locZ1), logicCoating1, "physCoatingBar1", logicWorld, false, i, checkOverlaps);
-        new G4PVPlacement(0, G4ThreeVector(posXb, locY1, locZ1), logicBar1, "physBar1", logicWorld, false, i, checkOverlaps);
+        G4double posX = start_locX1 + i * barX1;
+        new G4PVPlacement(0, G4ThreeVector(posX, locY1, locZ1), logicCoating1, "physCoatingBar1", logicWorld, false, i, checkOverlaps);
+        new G4PVPlacement(0, G4ThreeVector(posX, locY1, locZ1), logicBar1, "physBar1", logicWorld, false, i, checkOverlaps);
     }
    
 
@@ -87,16 +85,25 @@ G4VPhysicalVolume *PMDetectorConstruction::Construct(){ // we are defining here 
     G4double locY2 = -500 * mm; // fixing Y location of the first plane
     G4double locX2 = 0.; 
 
-    G4double start_locZb2 = (- planeZ2 + barZ2) * 0.5;
-    G4double start_locZc2 = (- planeZ2 + barZ2 +2*coatingThickness) * 0.5;
+    G4double start_locZ2 = (- planeZ2 + barZ2) * 0.5;
 
 
     for (G4int i = 0; i < nBarsPlane2; i++) {
-        G4double posZb = start_locZb2 + i * barZ2;
-        G4double posZc = start_locZc2 + i * (barZ2+ 2 * coatingThickness);
-        new G4PVPlacement(0, G4ThreeVector(locX2, locY2, posZc), logicCoating2, "physCoatingBar2", logicWorld, false, i, checkOverlaps);
-        new G4PVPlacement(0, G4ThreeVector(locX2, locY2, posZb), logicBar2, "physBar2", logicWorld, false, i, checkOverlaps);
+        G4double posZ = start_locZ2 + i * barZ2;
+        new G4PVPlacement(0, G4ThreeVector(locX2, locY2, posZ), logicCoating2, "physCoatingBar2", logicWorld, false, i, checkOverlaps);
+        new G4PVPlacement(0, G4ThreeVector(locX2, locY2, posZ), logicBar2, "physBar2", logicWorld, false, i, checkOverlaps);
     }
+
+    // setting colors for the objects
+    G4VisAttributes *coatingVisAtt = new G4VisAttributes(G4Colour(0.0, 0.0, 1.0, 0.3)); // translucent blue 
+    G4VisAttributes *scintillatorVisAtt = new G4VisAttributes(G4Colour(1.0, 0.0, 0.0, 0.7)); //translucent red
+
+
+    logicCoating1->SetVisAttributes(coatingVisAtt);
+    logicCoating2->SetVisAttributes(coatingVisAtt);
+    logicBar1->SetVisAttributes(scintillatorVisAtt);
+    logicBar2->SetVisAttributes(scintillatorVisAtt);
+
 
     return physWorld;
 
