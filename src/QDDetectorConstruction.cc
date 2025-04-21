@@ -1,16 +1,16 @@
-#include "PMDetectorConstruction.hh"
+#include "QDDetectorConstruction.hh"
 
-PMDetectorConstruction::PMDetectorConstruction(){
+QDDetectorConstruction::QDDetectorConstruction(){
 
 
 }
 
-PMDetectorConstruction::~PMDetectorConstruction(){
+QDDetectorConstruction::~QDDetectorConstruction(){
 
     
 }
 
-G4VPhysicalVolume *PMDetectorConstruction::Construct(){ // we are defining here our main function Construct
+G4VPhysicalVolume *QDDetectorConstruction::Construct(){ // we are defining here our main function Construct
 
     G4bool checkOverlaps = true;
 
@@ -87,7 +87,6 @@ G4VPhysicalVolume *PMDetectorConstruction::Construct(){ // we are defining here 
 
     G4double start_locZ2 = (- planeZ2 + barZ2) * 0.5;
 
-
     for (G4int i = 0; i < nBarsPlane2; i++) {
         G4double posZ = start_locZ2 + i * barZ2;
         new G4PVPlacement(0, G4ThreeVector(locX2, locY2, posZ), logicCoating2, "physCoatingBar2", logicWorld, false, i, checkOverlaps);
@@ -98,19 +97,17 @@ G4VPhysicalVolume *PMDetectorConstruction::Construct(){ // we are defining here 
     G4VisAttributes *coatingVisAtt = new G4VisAttributes(G4Colour(0.0, 0.0, 1.0, 0.3)); // translucent blue 
     G4VisAttributes *scintillatorVisAtt = new G4VisAttributes(G4Colour(1.0, 0.0, 0.0, 0.7)); //translucent red
 
-
     logicCoating1->SetVisAttributes(coatingVisAtt);
     logicCoating2->SetVisAttributes(coatingVisAtt);
     logicBar1->SetVisAttributes(scintillatorVisAtt);
     logicBar2->SetVisAttributes(scintillatorVisAtt);
-
 
     return physWorld;
 
 }
 
 
-void PMDetectorConstruction::ConstructSDandField(){
+void QDDetectorConstruction::ConstructSDandField(){
 
     if (!logicBar1 || !logicBar2) {
         G4cerr << "Error: logicBar1 o logicBar2 no están inicializados en ConstructSDandField()." << G4endl;
@@ -120,7 +117,7 @@ void PMDetectorConstruction::ConstructSDandField(){
     G4SDManager *sdManager = G4SDManager::GetSDMpointer();
 
     if (!sdManager->FindSensitiveDetector("QmioSD")) {
-        PMSensitiveDetector *sensDet = new PMSensitiveDetector("QmioSD");
+        QDSensitiveDetector *sensDet = new QDSensitiveDetector("QmioSD");
 
         logicBar1->SetSensitiveDetector(sensDet);
         logicBar2->SetSensitiveDetector(sensDet);

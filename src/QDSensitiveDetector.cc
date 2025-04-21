@@ -1,32 +1,32 @@
-#include "PMSensitiveDetector.hh"
+#include "QDSensitiveDetector.hh"
 
 
 
-PMSensitiveDetector::PMSensitiveDetector(G4String name) : G4VSensitiveDetector(name) {
-
-    fTotalEnergyDeposited = 0;
-
-}
-
-PMSensitiveDetector::~PMSensitiveDetector(){
-
-}
-
-
-void PMSensitiveDetector::Initialize(G4HCofThisEvent *){
+QDSensitiveDetector::QDSensitiveDetector(G4String name) : G4VSensitiveDetector(name) {
 
     fTotalEnergyDeposited = 0;
 
 }
 
+QDSensitiveDetector::~QDSensitiveDetector(){
 
-void PMSensitiveDetector::EndOfEvent(G4HCofThisEvent *){
+}
+
+
+void QDSensitiveDetector::Initialize(G4HCofThisEvent *){
+
+    fTotalEnergyDeposited = 0;
+
+}
+
+
+void QDSensitiveDetector::EndOfEvent(G4HCofThisEvent *){
 
     G4cout << "Deposited energy: " << fTotalEnergyDeposited << G4endl;
 
 }
 
-G4bool PMSensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory * ){
+G4bool QDSensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory * ){
 
     G4double fEnergyDeposited = aStep -> GetTotalEnergyDeposit();
 

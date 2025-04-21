@@ -1,17 +1,17 @@
-#ifndef PMSENSITIVEDETECTOR_HH
-#define PMSENSITIVEDETECTOR_HH
+#ifndef QDSENSITIVEDETECTOR_HH
+#define QDSENSITIVEDETECTOR_HH
 
 #include "G4VSensitiveDetector.hh"
 
 #include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
 
-class PMSensitiveDetector : public G4VSensitiveDetector{
+class QDSensitiveDetector : public G4VSensitiveDetector{
 
 
     public:
-        PMSensitiveDetector(G4String);
-        ~PMSensitiveDetector();
+        QDSensitiveDetector(G4String);
+        ~QDSensitiveDetector();
 
     private:
 

@@ -1,6 +1,6 @@
-#include "PMPrimaryGenerator.hh"
+#include "QDPrimaryGenerator.hh"
 
-PMPrimaryGenerator::PMPrimaryGenerator(){
+QDPrimaryGenerator::QDPrimaryGenerator(){
 
     fParticleGun = new G4ParticleGun(1);
 
@@ -33,12 +33,12 @@ PMPrimaryGenerator::PMPrimaryGenerator(){
 }
 
 
-PMPrimaryGenerator::~PMPrimaryGenerator(){
+QDPrimaryGenerator::~QDPrimaryGenerator(){
 
     delete fParticleGun;
 }
 
-void PMPrimaryGenerator::GeneratePrimaries(G4Event *anEvent){
+void QDPrimaryGenerator::GeneratePrimaries(G4Event *anEvent){
 
     // Create vertex
 

@@ -1,5 +1,5 @@
-#ifndef PMPRIMARYGENERATOR_HH
-#define PMPRIMARYGENERATOR_HH
+#ifndef QDPRIMARYGENERATOR_HH
+#define QDPRIMARYGENERATOR_HH
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4ParticleDefinition.hh"
@@ -8,11 +8,11 @@
 #include "G4ParticleGun.hh"
 
 
-class PMPrimaryGenerator : public G4VUserPrimaryGeneratorAction{
+class QDPrimaryGenerator : public G4VUserPrimaryGeneratorAction{
     public:
 
-        PMPrimaryGenerator();
-        ~PMPrimaryGenerator();
+        QDPrimaryGenerator();
+        ~QDPrimaryGenerator();
 
         virtual void GeneratePrimaries(G4Event *);
 

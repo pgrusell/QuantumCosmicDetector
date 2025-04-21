@@ -7,9 +7,9 @@
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
 
-#include "PMPhysicsList.hh"
-#include "PMDetectorConstruction.hh"
-#include "PMActionInitialization.hh"
+#include "QDPhysicsList.hh"
+#include "QDDetectorConstruction.hh"
+#include "QDActionInitialization.hh"
 
 int main(int argc, char** argv){
 
@@ -22,13 +22,13 @@ int main(int argc, char** argv){
     #endif
 
     // Physics list
-    runManager -> SetUserInitialization(new PMPhysicsList());
+    runManager -> SetUserInitialization(new QDPhysicsList());
 
     // Detector Construction
-    runManager -> SetUserInitialization(new PMDetectorConstruction());
+    runManager -> SetUserInitialization(new QDDetectorConstruction());
 
     // Action Initialization
-    runManager -> SetUserInitialization(new PMActionInitialization());
+    runManager -> SetUserInitialization(new QDActionInitialization());
 
     G4VisManager* visManager = new G4VisExecutive();
 

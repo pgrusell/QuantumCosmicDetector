@@ -1,5 +1,5 @@
-#ifndef PMDETECTORCONSTRUCTION
-#define PMDETECTORCONSTRUCTION
+#ifndef QDDETECTORCONSTRUCTION
+#define QDDETECTORCONSTRUCTION
 
 #include "G4VUserDetectorConstruction.hh"
 
@@ -18,15 +18,15 @@
 #include "G4Color.hh"
 #include "G4SDManager.hh"
 
-#include "PMSensitiveDetector.hh"
+#include "QDSensitiveDetector.hh"
 
 
 
-class PMDetectorConstruction : public G4VUserDetectorConstruction{
+class QDDetectorConstruction : public G4VUserDetectorConstruction{
 
     public: 
-        PMDetectorConstruction();
-        virtual ~PMDetectorConstruction(); // virtual function cause its already defined in the parent class 
+        QDDetectorConstruction();
+        virtual ~QDDetectorConstruction(); // virtual function cause its already defined in the parent class 
 
         virtual G4VPhysicalVolume *Construct();
 
