@@ -2,7 +2,6 @@
 #define QDACTIONINITIALIZATION_HH
 
 #include "G4VUserActionInitialization.hh"
-
 #include "QDPrimaryGenerator.hh"
 
 class QDActionInitialization : public G4VUserActionInitialization{

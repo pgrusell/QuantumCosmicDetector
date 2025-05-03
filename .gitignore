@@ -9,3 +9,9 @@ build/
 .Trash-*
 .nfs*
 
+# mac temporary files
+
+.DS_Store
+.vscode
+
+# cry_v1.7

@@ -25,7 +25,7 @@ class QDSensitiveDetector : public G4VSensitiveDetector{
         // handles what happens to the particle in each step 
         // when it is inside of the detector
 
-        virtual G4bool ProcessHits(G4Step *, G4TouchableHistory *);
+        virtual G4bool ProcessHits(G4Step *, G4TouchableHistory *) override;
 
 
 };

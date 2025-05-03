@@ -21,24 +21,29 @@ int main(int argc, char** argv){
         G4RunManager *runManager = new G4RunManager;
     #endif
 
-    // Physics list
-    runManager -> SetUserInitialization(new QDPhysicsList());
-
     // Detector Construction
     runManager -> SetUserInitialization(new QDDetectorConstruction());
+
+    // Physics list
+    runManager -> SetUserInitialization(new QDPhysicsList());
 
     // Action Initialization
     runManager -> SetUserInitialization(new QDActionInitialization());
 
-    G4VisManager* visManager = new G4VisExecutive();
+    // Initialize G4 kernel
+    runManager -> Initialize();
 
-    visManager -> Initialize();
+    G4VisManager* visManager = new G4VisExecutive();
+    visManager->Initialize();
 
     G4UImanager *UImanager = G4UImanager::GetUIpointer();
-
     UImanager->ApplyCommand("/control/execute vis.mac");
 
     ui -> SessionStart();
+
+    delete ui;
+    delete visManager;
+    delete runManager;
 
     return 0;
 

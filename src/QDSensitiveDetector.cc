@@ -4,7 +4,9 @@
 
 QDSensitiveDetector::QDSensitiveDetector(G4String name) : G4VSensitiveDetector(name) {
 
+    G4cout << "Constructor QDSensitiveDetector llamado" << G4endl;
     fTotalEnergyDeposited = 0;
+    collectionName.insert("QmioHitsCollection");
 
 }
 
