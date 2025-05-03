@@ -20,9 +20,9 @@ G4VPhysicalVolume *QDDetectorConstruction::Construct(){ // we are defining here 
     G4Material *scintillatorMat = nist->FindOrBuildMaterial("G4_POLYSTYRENE"); // scintillator bars
     G4Material *plasticMat = nist->FindOrBuildMaterial("G4_POLYETHYLENE");     // plastic coating
 
-    G4double xWorld = 3 * m;
-    G4double yWorld = 3 * m;
-    G4double zWorld = 3 * m;
+    G4double xWorld = 5 * m;
+    G4double yWorld = 5 * m;
+    G4double zWorld = 5 * m;
 
     G4Box *solidWorld = new G4Box("solidWorld", 0.5 * xWorld, 0.5 * yWorld, 0.5* zWorld);
     G4LogicalVolume *logicWorld = new G4LogicalVolume(solidWorld, worldMat, "logicWorld");

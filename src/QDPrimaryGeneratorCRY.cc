@@ -186,10 +186,30 @@ void QDPrimaryGeneratorCRY::GeneratePrimaries(G4Event* event)
       if(G4ParticleDefinition* particleDef = CryParticleDef((*particle)->id(),(*particle)->charge())) {
         particleGun->SetParticleDefinition(particleDef);
         particleGun->SetParticleEnergy((*particle)->ke()*MeV); // kinetic energy
-        particleGun->SetParticleMomentumDirection(G4ThreeVector((*particle)->u(), (*particle)->v(), (*particle)->w()));
-        G4ThreeVector pos((*particle)->x(), (*particle)->y(), (*particle)->z());
-        G4cout << "Setting particle position to: " << pos << G4endl;
-        particleGun->SetParticlePosition(pos * meter);
+
+        // Transform coordinates so particles come from above:
+        // Original (x,y,z) becomes (x,z,y)
+        G4ThreeVector pos((*particle)->x()*meter,      // x stays as x
+                          0.5*world_extent,                // y at top of world
+                          (*particle)->y()*meter);     // y becomes z
+
+        // Transform direction vector the same way
+        G4ThreeVector dir((*particle)->u(),              // x component stays as x
+                          -std::abs((*particle)->w()),   // z component becomes y
+                          (*particle)->v());             // y component becomes z
+
+        dir = dir.unit();
+
+
+        G4cout << "Original position: ("
+        << (*particle)->x() << ","
+        << (*particle)->y() << ","
+        << (*particle)->z() << ")" << G4endl;
+        G4cout << "Transformed position: " << pos << G4endl;
+        G4cout << "Transformed direction: " << dir << G4endl;
+
+        particleGun->SetParticleMomentumDirection(dir);
+        particleGun->SetParticlePosition(pos);
         particleGun->SetParticleTime(((*particle)->t()-timeSimulated)*second); // relative time
         particleGun->GeneratePrimaryVertex(event);
         ++nGenerated;
