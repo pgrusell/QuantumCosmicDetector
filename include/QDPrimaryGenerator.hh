@@ -9,7 +9,6 @@
 #include "G4ParticleGun.hh"
 #include "G4PhysicalConstants.hh"
 
-#include "QDGeneratorBase.hh"
 #include "QDPrimaryGeneratorCRY.hh"
 
 class G4Event;

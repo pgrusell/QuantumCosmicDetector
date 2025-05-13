@@ -52,4 +52,7 @@ Until now the g4 internal implementation seems to work.
 to generate the photons without using g4 optical scintillator method.
 
 
+2025/05/13 12:14
 
+Add a new command to obtain an output of the CRY generated particles 
+for further analysis, to check the particles behave correctly.

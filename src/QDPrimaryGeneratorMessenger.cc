@@ -28,6 +28,11 @@ QDPrimaryGeneratorMessenger::QDPrimaryGeneratorMessenger(
   fUpdateCmd -> SetGuidance("if you changed the CRY definition.");
   fUpdateCmd -> AvailableForStates(G4State_Idle);
 
+  fOutputCmd = new G4UIcmdWithABool("/CRY/output", this);
+  fOutputCmd->SetGuidance("Enable/disable particle data output to CSV file");
+  fOutputCmd->SetParameterName("Enable", false);
+  fOutputCmd->SetDefaultValue(false);
+
   fMessInput = new std::string;
 
 }
@@ -40,6 +45,7 @@ QDPrimaryGeneratorMessenger::~QDPrimaryGeneratorMessenger()
   delete fInputCmd;
   delete fUpdateCmd;
   delete fFileCmd;
+  delete fOutputCmd; 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -64,6 +70,10 @@ void QDPrimaryGeneratorMessenger::SetNewValue(
    { 
     fCryAction -> CRYFromFile(newValue); 
    }
+  
+  if (command == fOutputCmd) {
+    fCryAction->SetOutputEnabled(fOutputCmd->GetNewBoolValue(newValue));
+  }
 
 }
 

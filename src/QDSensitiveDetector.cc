@@ -4,7 +4,6 @@
 
 QDSensitiveDetector::QDSensitiveDetector(G4String name) : G4VSensitiveDetector(name) {
 
-    G4cout << "Constructor QDSensitiveDetector llamado" << G4endl;
     fTotalEnergyDeposited = 0;
     collectionName.insert("QmioHitsCollection");
 
@@ -36,7 +35,7 @@ G4bool QDSensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory * ){
 
         fTotalEnergyDeposited += fEnergyDeposited;
 
-        G4cout << "Energy deposited in this step: " << fEnergyDeposited << " GeV" << G4endl;
+        //G4cout << "Energy deposited in this step: " << fEnergyDeposited << " GeV" << G4endl;
     }
 
     return true;

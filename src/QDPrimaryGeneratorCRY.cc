@@ -55,19 +55,38 @@ particleGun(new G4ParticleGun()),                        // initializes particle
 particleTable(G4ParticleTable::GetParticleTable()),      // gets the particle table
 InputState(-1),                                          // state to check CRY input setup ! Important: starts at -1, means not initialized
 generator(nullptr),                                      // pointer to the CRY generator
-fInitialized(false)
+fInitialized(false),
+fOutputEnabled(false)
 { 
   gunMessenger = new QDPrimaryGeneratorMessenger(this);  // connects the messenger
   global_simulation_time = 0;                            // initialize global time
 
-  // Add analysis manager initialization
-  auto analysisManager = G4AnalysisManager::Instance();
-    
-  // Create ntuple for time tracking
-  analysisManager->CreateNtuple("CRY", "Cosmic Ray Events");
-  analysisManager->CreateNtupleDColumn("simulationTime");  // Column 0
-  analysisManager->FinishNtuple();
+}
 
+void QDPrimaryGeneratorCRY::SetOutputEnabled(G4bool enable) {
+    if (enable && !fOutputEnabled) {
+        // Initialize analysis manager when first enabled
+        auto analysisManager = G4AnalysisManager::Instance();
+        analysisManager->SetVerboseLevel(1);
+        analysisManager->SetDefaultFileType("csv");
+        analysisManager->SetFileName("cry_output");
+
+        // Create ntuple
+        analysisManager->CreateNtuple("CRY", "Cosmic Ray Events");
+        analysisManager->CreateNtupleDColumn("simulationTime");
+        analysisManager->CreateNtupleIColumn("eventID");
+        analysisManager->CreateNtupleSColumn("particleName");
+        analysisManager->CreateNtupleDColumn("energy");
+        analysisManager->CreateNtupleDColumn("px");
+        analysisManager->CreateNtupleDColumn("py");
+        analysisManager->CreateNtupleDColumn("pz");
+        analysisManager->CreateNtupleDColumn("x");
+        analysisManager->CreateNtupleDColumn("y");
+        analysisManager->CreateNtupleDColumn("z");
+        analysisManager->FinishNtuple();
+        analysisManager->OpenFile();
+    }
+    fOutputEnabled = enable;
 }
 
 
@@ -110,25 +129,10 @@ void QDPrimaryGeneratorCRY::Initialize()
     // Save the world size to inform CRY about sub-box size
     G4Box* worldBox = (G4Box*)(worldLV->GetSolid());
     
-    world_extent = worldBox->GetXHalfLength() * 2.0;  // Get full length
+    world_extent = worldBox->GetXHalfLength();  // Get full length
     world_z_max = worldBox->GetZHalfLength();
-        
-    // CRY only accepts certain subbox sizes: 1, 3, 10, 30, 100, 300
-    G4double validSizes[] = {1., 3., 10., 30., 100., 300.};
-    G4double selectedSize = 3.;  // Default to 3m if world is smaller
-    
-    // Using 1m might be too restrictive for cosmic ray simulations, as it could
-    // miss some shower components that would naturally spread over a larger area
-    // underestimate the flux of particles entering your detector orreate edge 
-    // effects in the simulation
-    for(G4double size : validSizes) {
-      if(size >= world_extent) {
-        selectedSize = size;
-        break;
-      }
-    }
 
-    G4String cmd = "subboxLength " + std::to_string(selectedSize);
+    G4String cmd = "subboxLength " + std::to_string(world_extent/m);
     UpdateCRY(&cmd);
 
     // Mark as initialized after successful setup
@@ -138,7 +142,17 @@ void QDPrimaryGeneratorCRY::Initialize()
 
 
 // Destructor
-QDPrimaryGeneratorCRY::~QDPrimaryGeneratorCRY(){}
+QDPrimaryGeneratorCRY::~QDPrimaryGeneratorCRY(){
+    auto analysisManager = G4AnalysisManager::Instance();
+    if (analysisManager) {
+        analysisManager->Write();
+        analysisManager->CloseFile();
+    }
+
+    delete particleGun;
+    delete gunMessenger;
+
+}
 
 // Generate primary particles
 void QDPrimaryGeneratorCRY::GeneratePrimaries(G4Event* event)
@@ -183,6 +197,7 @@ void QDPrimaryGeneratorCRY::GeneratePrimaries(G4Event* event)
     G4double timeSimulated = generator->timeSimulated();
 
     for(auto particle=particles.begin();particle!=particles.end();particle++) {
+      
       if(G4ParticleDefinition* particleDef = CryParticleDef((*particle)->id(),(*particle)->charge())) {
         particleGun->SetParticleDefinition(particleDef);
         particleGun->SetParticleEnergy((*particle)->ke()*MeV); // kinetic energy
@@ -200,6 +215,8 @@ void QDPrimaryGeneratorCRY::GeneratePrimaries(G4Event* event)
 
         dir = dir.unit();
 
+        G4String pName = CRYUtils::partName((*particle)->id());
+
 
         G4cout << "Original position: ("
         << (*particle)->x() << ","
@@ -208,14 +225,27 @@ void QDPrimaryGeneratorCRY::GeneratePrimaries(G4Event* event)
         G4cout << "Transformed position: " << pos << G4endl;
         G4cout << "Transformed direction: " << dir << G4endl;
 
+        if (fOutputEnabled) {
+          auto analysisManager = G4AnalysisManager::Instance();
+
+          analysisManager->FillNtupleDColumn(0, timeSimulated);
+          analysisManager->FillNtupleIColumn(1, event->GetEventID());
+          analysisManager->FillNtupleSColumn(2, pName);
+          analysisManager->FillNtupleDColumn(3, (*particle)->ke());
+          analysisManager->FillNtupleDColumn(4, dir.x());
+          analysisManager->FillNtupleDColumn(5, dir.y());
+          analysisManager->FillNtupleDColumn(6, dir.z());
+          analysisManager->FillNtupleDColumn(7, pos.x() / mm); // o usa directamente m
+          analysisManager->FillNtupleDColumn(8, pos.y() / mm);
+          analysisManager->FillNtupleDColumn(9, pos.z() / mm);
+        }
+
         particleGun->SetParticleMomentumDirection(dir);
         particleGun->SetParticlePosition(pos);
         particleGun->SetParticleTime(((*particle)->t()-timeSimulated)*second); // relative time
         particleGun->GeneratePrimaryVertex(event);
         ++nGenerated;
       }
-
-      delete (*particle); // clean up
       
       //....debug output 
       G4String pName = CRYUtils::partName((*particle)->id()); 
@@ -229,6 +259,10 @@ void QDPrimaryGeneratorCRY::GeneratePrimaries(G4Event* event)
            << " " << "direction cosines "
            << G4ThreeVector((*particle)->u(), (*particle)->v(), (*particle)->w())
            << "----------------------------------------------------------" << G4endl;
+
+
+      delete (*particle); // clean up
+
     }
   }
   
@@ -241,9 +275,7 @@ void QDPrimaryGeneratorCRY::GeneratePrimaries(G4Event* event)
   // fill
   auto analysisManager = G4AnalysisManager::Instance();
   if(analysisManager) {  // Check if manager exists
-      //G4cout << global_simulation_time + generator->timeSimulated() << G4endl;
-      //analysisManager->FillNtupleDColumn(1, global_simulation_time + generator->timeSimulated());
-      //analysisManager->AddNtupleRow();  // Don't forget to add the row after filling!
+    analysisManager->AddNtupleRow();
   }
 }
 

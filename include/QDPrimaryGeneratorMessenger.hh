@@ -34,6 +34,7 @@
 
 #include "G4UImessenger.hh"
 #include "globals.hh"
+#include "G4UIcmdWithABool.hh"
 
 class QDPrimaryGeneratorCRY;
 class G4UIdirectory;
@@ -59,6 +60,7 @@ class QDPrimaryGeneratorMessenger: public G4UImessenger
     G4UIcmdWithAString*          fInputCmd;
     G4UIcmdWithoutParameter*     fUpdateCmd;
     std::string*                 fMessInput;
+    G4UIcmdWithABool* fOutputCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

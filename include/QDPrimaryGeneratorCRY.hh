@@ -35,6 +35,9 @@ class QDPrimaryGeneratorCRY : public G4VUserPrimaryGeneratorAction
     G4ParticleDefinition* CryParticleDef(CRYParticle::CRYId, int charge);
     //G4ParticleDefinition* CryParticleDef(enum id);
 
+    void SetOutputEnabled(G4bool enable);
+    G4bool IsOutputEnabled() const { return fOutputEnabled; }
+
   private:
     G4ParticleGun* particleGun;
     G4ParticleTable* particleTable;
@@ -51,6 +54,8 @@ class QDPrimaryGeneratorCRY : public G4VUserPrimaryGeneratorAction
     G4double global_simulation_time;
 
     bool fInitialized;
+
+    G4bool fOutputEnabled;
 };
 
 #endif

@@ -13,4 +13,8 @@
 /vis/scene/add/axes
 /vis/scene/add/eventID
 
+/CRY/output true
+
 /run/beamOn 100
+
+

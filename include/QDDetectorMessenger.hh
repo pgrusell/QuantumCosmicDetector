@@ -28,6 +28,7 @@ class QDDetectorMessenger : public G4UImessenger {
         G4UIdirectory* fDir;  
         G4UIcmdWithAString* fSetModeCmd;
         QDDetectorConstruction* fDetector;
+
 };
 
 
