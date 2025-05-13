@@ -56,7 +56,8 @@ particleTable(G4ParticleTable::GetParticleTable()),      // gets the particle ta
 InputState(-1),                                          // state to check CRY input setup ! Important: starts at -1, means not initialized
 generator(nullptr),                                      // pointer to the CRY generator
 fInitialized(false),
-fOutputEnabled(false)
+fOutputEnabled(false),
+fVerbosityEnabled(true) 
 { 
   gunMessenger = new QDPrimaryGeneratorMessenger(this);  // connects the messenger
   global_simulation_time = 0;                            // initialize global time
@@ -89,6 +90,9 @@ void QDPrimaryGeneratorCRY::SetOutputEnabled(G4bool enable) {
     fOutputEnabled = enable;
 }
 
+void QDPrimaryGeneratorCRY::SetVerbosity(G4bool enable) {
+    fVerbosityEnabled = enable;
+}
 
 // Initialize CRY and check world geometry
 void QDPrimaryGeneratorCRY::Initialize()
@@ -154,12 +158,20 @@ QDPrimaryGeneratorCRY::~QDPrimaryGeneratorCRY(){
 
 }
 
-// Generate primary particles
+// Generate primary particles. 
+// Using primary vertex instead of particle gun to 
+// assign a time to the primary particle available
+// for all the simulation
+
+
 void QDPrimaryGeneratorCRY::GeneratePrimaries(G4Event* event)
 {
-  G4cout << "\n=== Starting Event " << event->GetEventID() << " ===" << G4endl;
-  G4cout << "InputState: " << InputState << G4endl;
-  G4cout << "Generator initialized: " << (generator != nullptr) << G4endl;
+
+  if (fVerbosityEnabled) {
+    G4cout << "\n=== Starting Event " << event->GetEventID() << " ===" << G4endl;
+    G4cout << "InputState: " << InputState << G4endl;
+    G4cout << "Generator initialized: " << (generator != nullptr) << G4endl;
+  }
     
   // If not initialized, try to initialize again
   if (InputState != 0) {
@@ -180,12 +192,6 @@ void QDPrimaryGeneratorCRY::GeneratePrimaries(G4Event* event)
     particles.clear();
     generator->genEvent(&particles); // CRY generates particles for this event
 
-    //....debug output
-    G4cout << "\nEvent=" << event->GetEventID() << " "
-           << "CRY generated nparticles=" << particles.size()
-           << "CRY time simulated (sec)=" << generator->timeSimulated()
-           << G4endl;
-
     // the time (*particle)->t() is the global time, i.e. the total time elapsed in the CRY simulation
     // the rate is around 1/0.01 sec = 1e-01 ms⁻¹ (but depends on the size of the world)
     // I set the time of the track to the local time, ie. the time since the generation of the primary
@@ -199,14 +205,15 @@ void QDPrimaryGeneratorCRY::GeneratePrimaries(G4Event* event)
     for(auto particle=particles.begin();particle!=particles.end();particle++) {
       
       if(G4ParticleDefinition* particleDef = CryParticleDef((*particle)->id(),(*particle)->charge())) {
-        particleGun->SetParticleDefinition(particleDef);
-        particleGun->SetParticleEnergy((*particle)->ke()*MeV); // kinetic energy
+
+        //particleGun->SetParticleDefinition(particleDef);
+        //particleGun->SetParticleEnergy((*particle)->ke()*MeV); // kinetic energy
 
         // Transform coordinates so particles come from above:
         // Original (x,y,z) becomes (x,z,y)
-        G4ThreeVector pos((*particle)->x()*meter,      // x stays as x
+        G4ThreeVector pos((*particle)->x()*meter,           // x stays as x
                           0.5*world_extent,                // y at top of world
-                          (*particle)->y()*meter);     // y becomes z
+                          (*particle)->y()*meter);        // y becomes z
 
         // Transform direction vector the same way
         G4ThreeVector dir((*particle)->u(),              // x component stays as x
@@ -218,12 +225,26 @@ void QDPrimaryGeneratorCRY::GeneratePrimaries(G4Event* event)
         G4String pName = CRYUtils::partName((*particle)->id());
 
 
-        G4cout << "Original position: ("
-        << (*particle)->x() << ","
-        << (*particle)->y() << ","
-        << (*particle)->z() << ")" << G4endl;
-        G4cout << "Transformed position: " << pos << G4endl;
-        G4cout << "Transformed direction: " << dir << G4endl;
+        if (fVerbosityEnabled) {
+          G4cout << "Original position: ("
+          << (*particle)->x() << ","
+          << (*particle)->y() << ","
+          << (*particle)->z() << ")" << G4endl;
+          G4cout << "Transformed position: " << pos << G4endl;
+          G4cout << "Transformed direction: " << dir << G4endl;
+        }
+
+        auto primary = new G4PrimaryParticle(particleDef,
+                                             dir.x() * (*particle)->ke() * MeV,
+                                             dir.y() * (*particle)->ke() * MeV,
+                                             dir.z() * (*particle)->ke() * MeV);
+        primary->SetKineticEnergy((*particle)->ke() * MeV);
+
+        // Create vertex and assign time directly from CRY
+        auto vertex = new G4PrimaryVertex(pos, (*particle)->t() * second);  // CRY time
+
+        vertex->SetPrimary(primary);
+        event->AddPrimaryVertex(vertex);
 
         if (fOutputEnabled) {
           auto analysisManager = G4AnalysisManager::Instance();
@@ -240,26 +261,29 @@ void QDPrimaryGeneratorCRY::GeneratePrimaries(G4Event* event)
           analysisManager->FillNtupleDColumn(9, pos.z() / mm);
         }
 
-        particleGun->SetParticleMomentumDirection(dir);
-        particleGun->SetParticlePosition(pos);
-        particleGun->SetParticleTime(((*particle)->t()-timeSimulated)*second); // relative time
-        particleGun->GeneratePrimaryVertex(event);
+        // particleGun->SetParticleMomentumDirection(dir);
+        // particleGun->SetParticlePosition(pos);
+        // particleGun->SetParticleTime(((*particle)->t()-timeSimulated)*second); // relative time
+        // particleGun->GeneratePrimaryVertex(event);
+
         ++nGenerated;
       }
       
       //....debug output 
       G4String pName = CRYUtils::partName((*particle)->id()); 
-      G4cout << "  "          << pName << " "
-           << "charge="      << (*particle)->charge() << " "
-           //<< setprecision(4)
-           << "energy (MeV)=" << (*particle)->ke()*MeV << " "
-           << "time (sec)=" << (*particle)->t() << " "
-           << "pos (m)"
-           << G4ThreeVector((*particle)->x(), (*particle)->y(), (*particle)->z())
-           << " " << "direction cosines "
-           << G4ThreeVector((*particle)->u(), (*particle)->v(), (*particle)->w())
-           << "----------------------------------------------------------" << G4endl;
 
+      if (fVerbosityEnabled) {
+        G4cout << "  "          << pName << " "
+            << "charge="      << (*particle)->charge() << " "
+            //<< setprecision(4)
+            << "energy (MeV)=" << (*particle)->ke()*MeV << " "
+            << "time (sec)=" << (*particle)->t() << " "
+            << "pos (m)"
+            << G4ThreeVector((*particle)->x(), (*particle)->y(), (*particle)->z())
+            << " " << "direction cosines "
+            << G4ThreeVector((*particle)->u(), (*particle)->v(), (*particle)->w())
+            << "----------------------------------------------------------" << G4endl;
+      }
 
       delete (*particle); // clean up
 
@@ -273,9 +297,10 @@ void QDPrimaryGeneratorCRY::GeneratePrimaries(G4Event* event)
   }
 
   // fill
-  auto analysisManager = G4AnalysisManager::Instance();
-  if(analysisManager) {  // Check if manager exists
-    analysisManager->AddNtupleRow();
+
+  if (fOutputEnabled) {
+      auto analysisManager = G4AnalysisManager::Instance();
+      analysisManager->AddNtupleRow();
   }
 }
 

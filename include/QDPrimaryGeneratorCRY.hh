@@ -38,6 +38,9 @@ class QDPrimaryGeneratorCRY : public G4VUserPrimaryGeneratorAction
     void SetOutputEnabled(G4bool enable);
     G4bool IsOutputEnabled() const { return fOutputEnabled; }
 
+    void SetVerbosity(G4bool enable);
+    G4bool GetVerbosity() const { return fVerbosityEnabled; }
+
   private:
     G4ParticleGun* particleGun;
     G4ParticleTable* particleTable;
@@ -53,9 +56,11 @@ class QDPrimaryGeneratorCRY : public G4VUserPrimaryGeneratorAction
     std::string CRY_setup_string;
     G4double global_simulation_time;
 
-    bool fInitialized;
+    G4bool fInitialized;
 
     G4bool fOutputEnabled;
+
+    G4bool fVerbosityEnabled;
 };
 
 #endif

@@ -13,7 +13,9 @@
 /vis/scene/add/axes
 /vis/scene/add/eventID
 
-/CRY/output true
+/CRY/output false
+/CRY/setVerbosity true 
+
 
 /run/beamOn 100
 

@@ -33,6 +33,11 @@ QDPrimaryGeneratorMessenger::QDPrimaryGeneratorMessenger(
   fOutputCmd->SetParameterName("Enable", false);
   fOutputCmd->SetDefaultValue(false);
 
+  fVerbosityCmd = new G4UIcmdWithABool("/CRY/setVerbosity", this);
+  fVerbosityCmd->SetGuidance("Enable/disable debug verbosity output");
+  fVerbosityCmd->SetParameterName("Verbosity", false);
+  fVerbosityCmd->SetDefaultValue(false);
+
   fMessInput = new std::string;
 
 }
@@ -46,6 +51,7 @@ QDPrimaryGeneratorMessenger::~QDPrimaryGeneratorMessenger()
   delete fUpdateCmd;
   delete fFileCmd;
   delete fOutputCmd; 
+  delete fVerbosityCmd;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -73,6 +79,10 @@ void QDPrimaryGeneratorMessenger::SetNewValue(
   
   if (command == fOutputCmd) {
     fCryAction->SetOutputEnabled(fOutputCmd->GetNewBoolValue(newValue));
+  }
+
+  if (command == fVerbosityCmd) {
+    fCryAction->SetVerbosity(fVerbosityCmd->GetNewBoolValue(newValue));
   }
 
 }
