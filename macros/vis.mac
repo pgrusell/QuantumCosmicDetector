@@ -1,3 +1,10 @@
+# Set simulation mode first
+/control/verbose 2
+/run/verbose 2
+
+/detector/setMode parameterized
+
+/run/geometryModified
 /run/initialize
 
 /vis/open OGL 600x600-0+0
@@ -13,10 +20,10 @@
 /vis/scene/add/axes
 /vis/scene/add/eventID
 
-/CRY/output false
+/CRY/output true
 /CRY/setVerbosity true 
 
 
-/run/beamOn 100
+/run/beamOn 1000
 
 

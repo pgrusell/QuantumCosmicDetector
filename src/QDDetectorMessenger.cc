@@ -5,12 +5,13 @@
 
 QDDetectorMessenger::QDDetectorMessenger(QDDetectorConstruction* det)
 : fDetector(det), fDir(nullptr), fSetModeCmd(nullptr) {
-    fDir = new G4UIdirectory("/g4sim/");
-    fDir->SetGuidance("Simulation control commands");
+    fDir = new G4UIdirectory("/detector/");
+    fDir->SetGuidance("Detector construction control commands");
 
-    fSetModeCmd = new G4UIcmdWithAString("/g4sim/setMode", this);
-    fSetModeCmd->SetGuidance("Choose simulation mode: parameterized, internal, or both");
-    fSetModeCmd->SetCandidates("parameterized internal both");
+    fSetModeCmd = new G4UIcmdWithAString("/detector/setMode", this);
+    fSetModeCmd->SetGuidance("Choose simulation mode: parameterized, internal, both or none");
+    fSetModeCmd->SetCandidates("none parameterized internal both");
+    fSetModeCmd->SetParameterName("Mode", false);
     fSetModeCmd->SetDefaultValue("internal");
 
 }
@@ -22,14 +23,30 @@ QDDetectorMessenger::~QDDetectorMessenger() {
 
 void QDDetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValue) {
     if (command == fSetModeCmd) {
-        if (newValue == "parameterized") {
-            fDetector->SetSimulationMode(SimulationMode::PARAMETERIZED);
-        } else if (newValue == "internal") {
+        G4cout << "\n=== Detector Messenger receiving mode change ===" << G4endl;
+        G4cout << "Current mode before change: " 
+               << (fDetector->GetSimulationMode() == SimulationMode::INTERNAL ? "INTERNAL" :
+                   fDetector->GetSimulationMode() == SimulationMode::PARAMETERIZED ? "PARAMETERIZED" :
+                   fDetector->GetSimulationMode() == SimulationMode::BOTH ? "BOTH" : "NONE") << G4endl;
+        
+        G4cout << "Attempting to set mode to: " << newValue << G4endl;
+        
+        if (newValue == "internal") {
             fDetector->SetSimulationMode(SimulationMode::INTERNAL);
+        } else if (newValue == "parameterized") {
+            fDetector->SetSimulationMode(SimulationMode::PARAMETERIZED);
         } else if (newValue == "both") {
             fDetector->SetSimulationMode(SimulationMode::BOTH);
-        } else {
-            G4cerr << "Invalid mode: " << newValue << G4endl;
+        } else if (newValue == "none") {
+            fDetector->SetSimulationMode(SimulationMode::NONE);
         }
+        
+        G4cout << "Mode after change: " 
+               << (fDetector->GetSimulationMode() == SimulationMode::INTERNAL ? "INTERNAL" :
+                   fDetector->GetSimulationMode() == SimulationMode::PARAMETERIZED ? "PARAMETERIZED" :
+                   fDetector->GetSimulationMode() == SimulationMode::BOTH ? "BOTH" : "NONE") << G4endl;
+        G4cout << "NOTE: Run /run/initialize to apply changes" << G4endl;
+        G4cout << "=======================================\n" << G4endl;
+    
     }
 }

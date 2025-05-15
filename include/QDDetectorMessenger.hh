@@ -17,10 +17,10 @@ class QDDetectorMessenger : public G4UImessenger {
 
     
     public:
-        QDDetectorMessenger(QDDetectorConstruction* det);
-        ~QDDetectorMessenger();
+        QDDetectorMessenger(QDDetectorConstruction*);
+        virtual ~QDDetectorMessenger();
     
-        void SetNewValue(G4UIcommand* command, G4String newValue);
+        virtual void SetNewValue(G4UIcommand*, G4String);
 
 
 

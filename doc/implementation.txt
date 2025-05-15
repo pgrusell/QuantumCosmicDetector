@@ -54,5 +54,29 @@ to generate the photons without using g4 optical scintillator method.
 
 2025/05/13 12:14
 
+    - PrimaryGeneratorCRY.
+
 Add a new command to obtain an output of the CRY generated particles 
 for further analysis, to check the particles behave correctly.
+
+Add new command to select the verbosity level.
+
+Changing generation of particle to use PrimaryVertex instead of 
+ParticleGun to set initial time of the vertex creation with 
+respect to the global simulation time.
+
+2025/05/14 12:03
+
+    - DetectorConstruction.
+
+Add SiPM at the extremes of the bars and setting optical properties
+for the materials to have g4 optical processes.
+
+2025/05/15 13:08
+
+    - DetectorConstruction.
+
+? Implementation of the messenger to change detector materials to 
+have scintillator properties or not. Issues with the command 
+when called from the interface. Detector doesn't seem to be 
+correctly reinitialized. 
