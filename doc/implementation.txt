@@ -72,7 +72,7 @@ respect to the global simulation time.
 Add SiPM at the extremes of the bars and setting optical properties
 for the materials to have g4 optical processes.
 
-2025/05/15 13:08
+2025/05/15 19:22
 
     - DetectorConstruction.
 
@@ -80,3 +80,9 @@ for the materials to have g4 optical processes.
 have scintillator properties or not. Issues with the command 
 when called from the interface. Detector doesn't seem to be 
 correctly reinitialized. 
+
+
+    - Analysis
+
+New analysis_cry macro to analyse CRY data to check the CR generation
+is okay.
