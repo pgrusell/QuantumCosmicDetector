@@ -6,7 +6,7 @@ QDDetectorConstruction::QDDetectorConstruction()
   flogicBar2(nullptr), 
   flogicSiPM(nullptr),
   fMode(SimulationMode::PARAMETERIZED),
-  fMessenger(nullptr)  // Initialize to nullptr
+  fMessenger(nullptr)  
 {
 
     fMessenger = new QDDetectorMessenger(this);
@@ -99,7 +99,7 @@ void QDDetectorConstruction::ConstructScintillatorLayer1(G4LogicalVolume* mother
     G4double planeX1 = (barX1 + 2*fcoatingThickness)*nBarsPlane1; // dimension of the plane along X direction: 912 mm
     G4double planeZ1 = barZ1;
 
-    // declaring the locations in which we will place the bars (b) and coatings (c)
+    // declaring the locations in which we will place the bars and coatings
     // locations are declared in such a way that the coordinate is the central point of the object in that direction
     // Y, Z locations will be fixed and we iterate over X direction to place the bars
 
@@ -145,7 +145,7 @@ void QDDetectorConstruction::ConstructScintillatorLayer1(G4LogicalVolume* mother
             fcheckOverlaps);    
 
         // Place the SiPMs at the front and back of the bar
-        G4VPhysicalVolume* physSiPM_front = new G4PVPlacement(0,
+        G4VPhysicalVolume* physSiPM1_front = new G4PVPlacement(0,
             G4ThreeVector(posX, locY1, -0.5 * barZ1 - 0.5 * sipmZ),  // Half bar length + half SiPM thickness
             flogicSiPM,
             sipmName1,
@@ -154,7 +154,7 @@ void QDDetectorConstruction::ConstructScintillatorLayer1(G4LogicalVolume* mother
             2*i,    // Unique copy number for front SiPM
             fcheckOverlaps);
 
-        G4VPhysicalVolume* physSiPM_back = new G4PVPlacement(0,
+        G4VPhysicalVolume* physSiPM1_back = new G4PVPlacement(0,
             G4ThreeVector(posX, locY1, 0.5 * barZ1 + 0.5 * sipmZ),   // Half bar length + half SiPM thickness
             flogicSiPM,
             sipmName2,
@@ -172,28 +172,29 @@ void QDDetectorConstruction::ConstructScintillatorLayer1(G4LogicalVolume* mother
 
             // Define border surfaces between scintillator and SiPM (front and back)
             new G4LogicalBorderSurface("ScintSiPMFrontSurface_" + std::to_string(i),
-                physSiPM_front,
-                physCoating1, // or physBar1 depending on what you consider the contact
+                physSiPM1_front,
+                physBar1, 
                 fScintSiPMSurface);
 
             new G4LogicalBorderSurface("ScintSiPMBackSurface_" + std::to_string(i),
-                physSiPM_back,
-                physCoating1,
+                physSiPM1_back,
+                physBar1,
                 fScintSiPMSurface);
         }
 
         }
 }
 
+// placed perpendicular with respect to the first layer
 void QDDetectorConstruction::ConstructScintillatorLayer2(G4LogicalVolume* motherVolume) {
 
     G4double barX2 = 1350.0 * mm; // for the second layer
     G4double barY2 = 15.0 * mm;
     G4double barZ2 = 15.0 * mm;
 
-    G4double sipmX = 3.0 * mm;  // same as barX1
-    G4double sipmY = 15.0 * mm;  // same as barY1
-    G4double sipmZ = 15.0 * mm;   // small thickness
+    G4double sipmX = 3.0 * mm;  
+    G4double sipmY = 15.0 * mm;  
+    G4double sipmZ = 15.0 * mm;  
 
     // bar with coating for the second layer
     G4Box *solidBar2 = new G4Box("solidBar2", 0.5 * barX2, 0.5 * barY2, 0.5 * barZ2);
@@ -244,7 +245,7 @@ void QDDetectorConstruction::ConstructScintillatorLayer2(G4LogicalVolume* mother
             fcheckOverlaps);
     
         // Then place the bar inside its coating at the center (0,0,0) relative to coating
-        new G4PVPlacement(0, 
+        G4VPhysicalVolume* physBar2 = new G4PVPlacement(0, 
             G4ThreeVector(0., 0., 0.),  // Centered in coating
             flogicBar2, 
             barName, 
@@ -253,9 +254,8 @@ void QDDetectorConstruction::ConstructScintillatorLayer2(G4LogicalVolume* mother
             i, 
             fcheckOverlaps);
 
-
         // Place the SiPMs at the front and back of the bar
-        new G4PVPlacement(0,
+        G4VPhysicalVolume* physSiPM2_front = new G4PVPlacement(0,
             G4ThreeVector(- 0.5 * planeX2 - 0.5 * sipmX , locY2, posZ),  // Half bar length + half SiPM thickness
             flogicSiPM,
             sipmName1,
@@ -264,7 +264,7 @@ void QDDetectorConstruction::ConstructScintillatorLayer2(G4LogicalVolume* mother
             2*i,    // Unique copy number for front SiPM
             fcheckOverlaps);
 
-        new G4PVPlacement(0,
+        G4VPhysicalVolume* physSiPM2_back = new G4PVPlacement(0,
             G4ThreeVector( 0.5 * planeX2 + 0.5 * sipmX, locY2, posZ),   // Half bar length + half SiPM thickness
             flogicSiPM,
             sipmName2,
@@ -273,6 +273,25 @@ void QDDetectorConstruction::ConstructScintillatorLayer2(G4LogicalVolume* mother
             2*i+1,  // Unique copy number for back SiPM
             fcheckOverlaps);
 
+
+        if (fMode == SimulationMode::INTERNAL || fMode == SimulationMode::BOTH) {
+            // Define border surface between coating and scintillator (inside coating)
+            new G4LogicalBorderSurface("ScintCoatingSurface2_" + std::to_string(i),
+                physBar2,       // inside volume
+                physCoating2,   // outside volume
+                fScintCoatingSurface);
+
+            // Define border surfaces between scintillator and SiPM (front and back)
+            new G4LogicalBorderSurface("ScintSiPMFrontSurface2_" + std::to_string(i),
+                physSiPM2_front,
+                physBar2, 
+                fScintSiPMSurface);
+
+            new G4LogicalBorderSurface("ScintSiPMBackSurface2_" + std::to_string(i),
+                physSiPM2_back,
+                physBar2,
+                fScintSiPMSurface);
+        }
         }
 
 }
@@ -302,13 +321,9 @@ G4VPhysicalVolume* QDDetectorConstruction::DefineVolumes(){
     // Second layer - horizontal bars (along X)
     ConstructScintillatorLayer2(flogicWorld);
 
-
-
     flogicBar1->SetVisAttributes(fscintillatorVisAtt);
     flogicBar2->SetVisAttributes(fscintillatorVisAtt);
     
-
-
 
     if (!physWorld) {
         G4Exception("QDDetectorConstruction::Construct()",
@@ -365,7 +380,6 @@ void QDDetectorConstruction::ConstructSDandField(){
         delete fSensitiveDetector;
         fSensitiveDetector = nullptr;
     }
-
 
     // Create and register the SD
     auto sdManager = G4SDManager::GetSDMpointer();
