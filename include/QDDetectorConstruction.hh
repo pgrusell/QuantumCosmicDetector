@@ -104,12 +104,13 @@ class QDDetectorConstruction : public G4VUserDetectorConstruction{
             flogicSiPM = nullptr;
         }
         void DefineMaterials();
-        void DefineInternalMaterials();
+        void DefineScintillatorMaterials();
         G4VPhysicalVolume* DefineVolumes();
 
 
         void ConstructScintillatorLayer1(G4LogicalVolume* motherVolume);
         void ConstructScintillatorLayer2(G4LogicalVolume* motherVolume);
+        void ConstructQPU(G4LogicalVolume* motherVolume);
 
 
         QDDetectorMessenger* fMessenger;
@@ -119,16 +120,19 @@ class QDDetectorConstruction : public G4VUserDetectorConstruction{
         G4Material* fscintillatorMat = nullptr;  // pointer to the chamber material
         G4Material* fcoatingMat = nullptr;
         G4Material* fsipmMat = nullptr;
+        G4Material* fqpuMat = nullptr;
 
         G4LogicalVolume *flogicWorld = nullptr;  // pointer to the world logical volume
         G4LogicalVolume *flogicBar1 = nullptr;  
         G4LogicalVolume *flogicBar2 = nullptr; 
         G4LogicalVolume *flogicSiPM = nullptr;
+        G4LogicalVolume *flogicQPU = nullptr;
 
         // Visualization attributes
         G4VisAttributes* fcoatingVisAtt = nullptr;
         G4VisAttributes* fscintillatorVisAtt = nullptr;
         G4VisAttributes* fsipmVisAtt = nullptr;
+        G4VisAttributes* fqpuVisAtt = nullptr;
 
         G4OpticalSurface* fScintCoatingSurface = nullptr;
         G4OpticalSurface* fScintSiPMSurface = nullptr;

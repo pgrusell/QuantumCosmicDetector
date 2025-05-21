@@ -24,7 +24,7 @@ SimulationMode QDDetectorConstruction::GetSimulationMode() const {
     return fMode;
 }
 
-void QDDetectorConstruction::DefineInternalMaterials() {
+void QDDetectorConstruction::DefineScintillatorMaterials() {
     G4NistManager *nist = G4NistManager::Instance();
 
     // Get base materials
@@ -32,6 +32,7 @@ void QDDetectorConstruction::DefineInternalMaterials() {
     fscintillatorMat = nist->FindOrBuildMaterial("G4_POLYSTYRENE");
     fcoatingMat = nist->FindOrBuildMaterial("G4_POLYETHYLENE");
     fsipmMat = nist->FindOrBuildMaterial("G4_Si");
+    fqpuMat = nist->FindOrBuildMaterial("G4_Si");
 
     const G4int nEntries = 2;
     G4double energy[nEntries] = {2.0*eV, 3.5*eV};
@@ -61,6 +62,7 @@ void QDDetectorConstruction::DefineMaterials(){
     fscintillatorMat = nist->FindOrBuildMaterial("G4_POLYSTYRENE");
     fcoatingMat = nist->FindOrBuildMaterial("G4_POLYETHYLENE");     // plastic coating
     fsipmMat = nist->FindOrBuildMaterial("G4_Si");
+    fqpuMat = nist->FindOrBuildMaterial("G4_Si");
 }
 
 void QDDetectorConstruction::ConstructScintillatorLayer1(G4LogicalVolume* motherVolume) {
@@ -296,6 +298,27 @@ void QDDetectorConstruction::ConstructScintillatorLayer2(G4LogicalVolume* mother
 
 }
 
+
+void QDDetectorConstruction::ConstructQPU(G4LogicalVolume* motherVolume){
+
+    G4double qpuX = 2.0 * mm; 
+    G4double qpuY = 22.0 * mm;
+    G4double qpuZ = 22.0 * mm;
+
+    G4Box *solidQPU = new G4Box("solidQPU", 0.5 * qpuX, 0.5 * qpuY, 0.5 * qpuZ);
+
+    flogicQPU = new G4LogicalVolume(solidQPU, fqpuMat, "logicQPU");
+
+    G4VPhysicalVolume* physQPU = new G4PVPlacement(0, 
+            G4ThreeVector(0., 0.5*m, 0.),
+            flogicQPU,
+            "physQPU",
+            flogicWorld,  // Parent volume is the world
+            false,
+            0,
+            fcheckOverlaps);
+}
+
 G4VPhysicalVolume* QDDetectorConstruction::DefineVolumes(){
 
     G4double xWorld = 5 * m;
@@ -315,14 +338,19 @@ G4VPhysicalVolume* QDDetectorConstruction::DefineVolumes(){
 
     fsipmVisAtt = new G4VisAttributes(G4Colour(0.0, 1.0, 0.0, 0.8)); //translucent green
 
+    fqpuVisAtt = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0, 0.8)); //translucent white
+
     // First layer - vertical bars (along Z)
     ConstructScintillatorLayer1(flogicWorld);
     
     // Second layer - horizontal bars (along X)
     ConstructScintillatorLayer2(flogicWorld);
 
+    ConstructQPU(flogicWorld);
+
     flogicBar1->SetVisAttributes(fscintillatorVisAtt);
     flogicBar2->SetVisAttributes(fscintillatorVisAtt);
+    flogicQPU ->SetVisAttributes(fqpuVisAtt);
     
 
     if (!physWorld) {
@@ -346,7 +374,7 @@ G4VPhysicalVolume *QDDetectorConstruction::Construct(){ // we are defining here 
     // Define materials
     if (fMode == SimulationMode::INTERNAL || fMode == SimulationMode::BOTH) {
         G4cout << "Initializing internal materials with optical properties..." << G4endl;
-        DefineInternalMaterials();
+        DefineScintillatorMaterials();
     } else {
         G4cout << "Using standard materials without optical properties" << G4endl;
         DefineMaterials();
