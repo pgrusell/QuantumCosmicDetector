@@ -2,8 +2,6 @@
 /control/verbose 2
 /run/verbose 2
 
-/detector/setMode parameterized
-
 /run/geometryModified
 /run/initialize
 
@@ -20,10 +18,10 @@
 /vis/scene/add/axes
 /vis/scene/add/eventID
 
-/CRY/output true
+/CRY/output false
 /CRY/setVerbosity true 
 
 
-/run/beamOn 1000
+/run/beamOn 10
 
 

@@ -1,17 +1,17 @@
-#ifndef QDSENSITIVEDETECTOR_HH
-#define QDSENSITIVEDETECTOR_HH
+#ifndef QDSENSITIVEBARDETECTOR_HH
+#define QDSENSITIVEBARDETECTOR_HH
 
 #include "G4VSensitiveDetector.hh"
 
 #include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
 
-class QDSensitiveDetector : public G4VSensitiveDetector{
+class QDSensitiveBarDetector : public G4VSensitiveDetector{
 
 
     public:
-        QDSensitiveDetector(G4String);
-        ~QDSensitiveDetector();
+        QDSensitiveBarDetector(G4String);
+        ~QDSensitiveBarDetector();
 
     private:
 
@@ -24,7 +24,6 @@ class QDSensitiveDetector : public G4VSensitiveDetector{
 
         // handles what happens to the particle in each step 
         // when it is inside of the detector
-
         virtual G4bool ProcessHits(G4Step *, G4TouchableHistory *) override;
 
 

@@ -30,23 +30,39 @@ void QDDetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValue) {
                    fDetector->GetSimulationMode() == SimulationMode::BOTH ? "BOTH" : "NONE") << G4endl;
         
         G4cout << "Attempting to set mode to: " << newValue << G4endl;
+
+        SimulationMode currentMode = fDetector->GetSimulationMode();
+        SimulationMode newMode = currentMode;
         
         if (newValue == "internal") {
-            fDetector->SetSimulationMode(SimulationMode::INTERNAL);
+            newMode = SimulationMode::INTERNAL;
         } else if (newValue == "parameterized") {
-            fDetector->SetSimulationMode(SimulationMode::PARAMETERIZED);
+            newMode = SimulationMode::PARAMETERIZED;
         } else if (newValue == "both") {
-            fDetector->SetSimulationMode(SimulationMode::BOTH);
+            newMode = SimulationMode::BOTH;
         } else if (newValue == "none") {
-            fDetector->SetSimulationMode(SimulationMode::NONE);
+            newMode = SimulationMode::NONE;
+        } else {
+            G4cerr << "Invalid mode: " << newValue << G4endl;
+            return;
+        }
+
+
+        if (newMode != currentMode) {
+            fDetector->SetSimulationMode(newMode);
+            fDetector->UpdateGeometry();
         }
         
         G4cout << "Mode after change: " 
                << (fDetector->GetSimulationMode() == SimulationMode::INTERNAL ? "INTERNAL" :
                    fDetector->GetSimulationMode() == SimulationMode::PARAMETERIZED ? "PARAMETERIZED" :
                    fDetector->GetSimulationMode() == SimulationMode::BOTH ? "BOTH" : "NONE") << G4endl;
-        G4cout << "NOTE: Run /run/initialize to apply changes" << G4endl;
+        G4cout << "NOTE: Run the following commands to apply changes:" << G4endl;
+        G4cout << "/vis/scene/notifyHandlers" << G4endl;
+        G4cout << "/vis/scene/add/volume" << G4endl;
+        G4cout << "/vis/viewer/flush" << G4endl;
         G4cout << "=======================================\n" << G4endl;
     
     }
+    
 }

@@ -86,3 +86,41 @@ correctly reinitialized.
 
 New analysis_cry macro to analyse CRY data to check the CR generation
 is okay.
+
+2025/05/22 17:50
+
+    - SensitiveDetector
+
+Adding separate classes to handle different sensitive detectors. 
+
+? For the SiPM class the detection of the photons is not well implemented,
+no optical photon is detected by these volumes, I don't know why.
+
+    I have tried: 
+    - Declaring a refractive index for the SiPM material.
+    - Declaring an optical surface between the SiPM material and the 
+    scintillator bars.
+    - Declaring both.
+    ? Maybe there is a gap between the volumes ? Not likely I think
+
+    - DetectorConstruction
+
+Some functions for dealing with the setMode command have been implemented
+in order to find the best solution to be able to run the command from the 
+user interface. Up until now it seems to work if the mode is changed before
+running the executable.
+
+Running the command from the interface is giving problems
+
+    Bugs in the implementation:
+    - Changing the mode from PARAMETERIZED to INTERNAL and then 
+    running some vis commands seems to be rebuilding the detector 
+    construction correctly but the materials are not changed correctly
+    and there is no generation of optical photons.
+    - Changin the mode from INTERNAL to PARAMETERIZED doesn't change
+    the detector correclty, not even in the visor, it seems that the detector 
+    ends up being destroyed somehow.
+    - If we run the command setting the output from CRY to true, there is 
+    some bug with the generation of the files. The analysis manager needs
+    to be reinitialized.
+

@@ -5,7 +5,7 @@ QDDetectorConstruction::QDDetectorConstruction()
 : flogicBar1(nullptr), 
   flogicBar2(nullptr), 
   flogicSiPM(nullptr),
-  fMode(SimulationMode::PARAMETERIZED),
+  fMode(SimulationMode::INTERNAL),
   fMessenger(nullptr)  
 {
 
@@ -23,6 +23,80 @@ QDDetectorConstruction::~QDDetectorConstruction(){
 SimulationMode QDDetectorConstruction::GetSimulationMode() const {
     return fMode;
 }
+
+void QDDetectorConstruction::SetSimulationMode(SimulationMode mode) { 
+    G4cout << "=== Setting simulation mode ===" << G4endl;
+                
+    try {
+        // Store current mode for comparison
+        SimulationMode oldMode = fMode;
+        fMode = mode;
+                
+        if (oldMode != fMode) {
+            // Only cleanup and reinitialize if mode actually changed
+            CleanupGeometry();
+                    
+            if (auto runManager = G4RunManager::GetRunManager()) {
+                runManager->GeometryHasBeenModified();
+                // Don't force immediate reconstruction
+                // Let /run/initialize handle it
+                }
+            }
+                
+            G4cout << "Mode changed to: " 
+                << (fMode == SimulationMode::INTERNAL ? "INTERNAL" :
+                    fMode == SimulationMode::PARAMETERIZED ? "PARAMETERIZED" :
+                    fMode == SimulationMode::BOTH ? "BOTH" : "NONE") << G4endl;
+                
+        } catch (const std::exception& e) {
+            G4cerr << "Exception during mode change: " << e.what() << G4endl;
+        }
+}
+
+void QDDetectorConstruction::CleanupGeometry() {
+
+    G4GeometryManager::GetInstance()->OpenGeometry();
+
+    // Limpia stores de volúmenes y sólidos
+    G4PhysicalVolumeStore::GetInstance()->Clean();
+    G4LogicalVolumeStore::GetInstance()->Clean();
+    G4SolidStore::GetInstance()->Clean();
+
+    // reset materials without deleting them !! 
+    // segmentation fault occurs if we delete them
+    fworldMat = nullptr;
+    fscintillatorMat = nullptr;
+    fcoatingMat = nullptr;
+    fsipmMat = nullptr;
+    fqpuMat = nullptr;
+
+    // Cleanup visualization attributes
+    delete fcoatingVisAtt;       fcoatingVisAtt = nullptr;
+    delete fscintillatorVisAtt;  fscintillatorVisAtt = nullptr;
+    delete fsipmVisAtt;          fsipmVisAtt = nullptr;
+    delete fqpuVisAtt;           fqpuVisAtt = nullptr;
+
+    // Cleanup optical surfaces
+    delete fScintCoatingSurface; fScintCoatingSurface = nullptr;
+    delete fScintSiPMSurface;    fScintSiPMSurface = nullptr;
+
+    // Reset logical volume pointers
+    flogicWorld = nullptr;
+    flogicBar1 = nullptr;
+    flogicBar2 = nullptr;
+    flogicSiPM = nullptr;
+    flogicQPU = nullptr;
+
+    delete fSensitiveBarDetector;   fSensitiveBarDetector = nullptr;
+    delete fSensitiveSiPMDetector;  fSensitiveSiPMDetector = nullptr;
+    delete fSensitiveQPUDetector;   fSensitiveQPUDetector = nullptr;
+}
+
+void QDDetectorConstruction::UpdateGeometry() {
+    CleanupGeometry();
+    G4RunManager::GetRunManager()->DefineWorldVolume(this->Construct());
+}
+
 
 void QDDetectorConstruction::DefineScintillatorMaterials() {
     G4NistManager *nist = G4NistManager::Instance();
@@ -52,6 +126,21 @@ void QDDetectorConstruction::DefineScintillatorMaterials() {
     
     G4cout << "=== Basic scintillator properties set ===" << G4endl;
     scintMPT->DumpTable();
+
+    fScintCoatingSurface = new G4OpticalSurface("ScintCoatingSurface");
+    fScintCoatingSurface->SetType(dielectric_dielectric);
+    fScintCoatingSurface->SetFinish(groundfrontpainted); // superficie rugosa pintada
+    fScintCoatingSurface->SetModel(unified);             // modelo UNIFIED de Geant4
+
+    G4MaterialPropertiesTable* coatingMPT = new G4MaterialPropertiesTable();
+
+    std::vector<G4double> photonEnergy = {1.5 * eV, 3.5 * eV};
+    std::vector<G4double> reflectivity = {1.0, 1.0};  // 100% reflectante
+    coatingMPT->AddProperty("REFLECTIVITY", photonEnergy, reflectivity);
+
+    fScintCoatingSurface->SetMaterialPropertiesTable(coatingMPT);
+
+
 }
 
 void QDDetectorConstruction::DefineMaterials(){
@@ -172,16 +261,6 @@ void QDDetectorConstruction::ConstructScintillatorLayer1(G4LogicalVolume* mother
                 physCoating1,   // outside volume
                 fScintCoatingSurface);
 
-            // Define border surfaces between scintillator and SiPM (front and back)
-            new G4LogicalBorderSurface("ScintSiPMFrontSurface_" + std::to_string(i),
-                physSiPM1_front,
-                physBar1, 
-                fScintSiPMSurface);
-
-            new G4LogicalBorderSurface("ScintSiPMBackSurface_" + std::to_string(i),
-                physSiPM1_back,
-                physBar1,
-                fScintSiPMSurface);
         }
 
         }
@@ -282,22 +361,10 @@ void QDDetectorConstruction::ConstructScintillatorLayer2(G4LogicalVolume* mother
                 physBar2,       // inside volume
                 physCoating2,   // outside volume
                 fScintCoatingSurface);
-
-            // Define border surfaces between scintillator and SiPM (front and back)
-            new G4LogicalBorderSurface("ScintSiPMFrontSurface2_" + std::to_string(i),
-                physSiPM2_front,
-                physBar2, 
-                fScintSiPMSurface);
-
-            new G4LogicalBorderSurface("ScintSiPMBackSurface2_" + std::to_string(i),
-                physSiPM2_back,
-                physBar2,
-                fScintSiPMSurface);
         }
         }
 
 }
-
 
 void QDDetectorConstruction::ConstructQPU(G4LogicalVolume* motherVolume){
 
@@ -401,25 +468,38 @@ void QDDetectorConstruction::ConstructSDandField(){
     return;
     }
 
-    // Clean up existing SD if any
-    if (fSensitiveDetector) {
-        G4SDManager* sdManager = G4SDManager::GetSDMpointer();
-        sdManager->Activate("QmioSD", false);
-        delete fSensitiveDetector;
-        fSensitiveDetector = nullptr;
+    if (!flogicQPU) {
+    G4Exception("QDDetectorConstruction::ConstructSDandField()",
+               "MyCode2",
+               FatalException,
+               "QPU logical volume not initialized");
+    return;
     }
 
     // Create and register the SD
     auto sdManager = G4SDManager::GetSDMpointer();
-    fSensitiveDetector = new QDSensitiveDetector("QmioSD");
-    sdManager->AddNewDetector(fSensitiveDetector);
 
-    // Set the sensitive detector to logical volumes
-    flogicBar1->SetSensitiveDetector(fSensitiveDetector);
-    flogicBar2->SetSensitiveDetector(fSensitiveDetector);
-    flogicSiPM->SetSensitiveDetector(fSensitiveDetector);
-    
+    fSensitiveQPUDetector = new QDSensitiveQPUDetector("/SD/QPU");
+    sdManager -> AddNewDetector(fSensitiveQPUDetector);
+    flogicQPU -> SetSensitiveDetector(fSensitiveQPUDetector);
+
+    if (fMode == SimulationMode::INTERNAL || fMode == SimulationMode::BOTH) {
+
+        fSensitiveSiPMDetector = new QDSensitiveSiPMDetector("/SD/SiPM");
+        sdManager -> AddNewDetector(fSensitiveSiPMDetector);
+        flogicSiPM -> SetSensitiveDetector(fSensitiveSiPMDetector);
+
+    }
+    if (fMode == SimulationMode::PARAMETERIZED || fMode == SimulationMode::BOTH) {
+
+        fSensitiveBarDetector = new QDSensitiveBarDetector("/SD/Bar");
+        sdManager -> AddNewDetector(fSensitiveBarDetector);
+
+        flogicBar1 -> SetSensitiveDetector(fSensitiveBarDetector);
+        flogicBar2 -> SetSensitiveDetector(fSensitiveBarDetector);
+       
+    }
+
 }
-
 
 
