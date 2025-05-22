@@ -78,7 +78,6 @@ void QDDetectorConstruction::CleanupGeometry() {
 
     // Cleanup optical surfaces
     delete fScintCoatingSurface; fScintCoatingSurface = nullptr;
-    delete fScintSiPMSurface;    fScintSiPMSurface = nullptr;
 
     // Reset logical volume pointers
     flogicWorld = nullptr;
