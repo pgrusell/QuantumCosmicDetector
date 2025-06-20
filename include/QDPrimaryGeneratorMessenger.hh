@@ -35,6 +35,8 @@
 #include "G4UImessenger.hh"
 #include "globals.hh"
 #include "G4UIcmdWithABool.hh"
+#include "QDRunAction.hh"
+#include "QDEventAction.hh"
 
 class QDPrimaryGeneratorCRY;
 class G4UIdirectory;
@@ -51,10 +53,14 @@ class QDPrimaryGeneratorMessenger: public G4UImessenger
    ~QDPrimaryGeneratorMessenger();
     
     void SetNewValue(G4UIcommand*, G4String);
+
+    void SetRunAction(QDRunAction* runAction) { fRunAction = runAction; }
+
     
   private:
 
     QDPrimaryGeneratorCRY*       fCryAction;
+    QDRunAction*                 fRunAction;
     G4UIdirectory*               fCryDir;
     G4UIcmdWithAString*          fFileCmd; 
     G4UIcmdWithAString*          fInputCmd;

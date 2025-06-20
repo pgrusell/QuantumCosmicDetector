@@ -78,7 +78,11 @@ void QDPrimaryGeneratorMessenger::SetNewValue(
    }
   
   if (command == fOutputCmd) {
-    fCryAction->SetOutputEnabled(fOutputCmd->GetNewBoolValue(newValue));
+      G4bool outputVal = fOutputCmd->GetNewBoolValue(newValue);
+      if (fRunAction) {
+        fRunAction->EnableCryOutput(outputVal);
+      }
+      QDEventAction::SetCRYOutput(outputVal);
   }
 
   if (command == fVerbosityCmd) {

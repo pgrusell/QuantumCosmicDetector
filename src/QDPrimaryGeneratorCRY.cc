@@ -37,6 +37,9 @@
 #include "RNGWrapper.hh"
 #include "Randomize.hh"
 
+#include "QDRunAction.hh"
+#include "G4RunManager.hh"
+
 
 
 // Primary particle generator class that reads a setup file with 
@@ -65,29 +68,14 @@ fVerbosityEnabled(true)
 }
 
 void QDPrimaryGeneratorCRY::SetOutputEnabled(G4bool enable) {
-    if (enable && !fOutputEnabled) {
-        // Initialize analysis manager when first enabled
-        auto analysisManager = G4AnalysisManager::Instance();
-        analysisManager->SetVerboseLevel(1);
-        analysisManager->SetDefaultFileType("csv");
-        analysisManager->SetFileName("cry_output");
-
-        // Create ntuple
-        analysisManager->CreateNtuple("CRY", "Cosmic Ray Events");
-        analysisManager->CreateNtupleDColumn("simulationTime");
-        analysisManager->CreateNtupleIColumn("eventID");
-        analysisManager->CreateNtupleSColumn("particleName");
-        analysisManager->CreateNtupleDColumn("energy");
-        analysisManager->CreateNtupleDColumn("px");
-        analysisManager->CreateNtupleDColumn("py");
-        analysisManager->CreateNtupleDColumn("pz");
-        analysisManager->CreateNtupleDColumn("x");
-        analysisManager->CreateNtupleDColumn("y");
-        analysisManager->CreateNtupleDColumn("z");
-        analysisManager->FinishNtuple();
-        analysisManager->OpenFile();
-    }
     fOutputEnabled = enable;
+
+    auto* runAction = dynamic_cast<const QDRunAction*>(G4RunManager::GetRunManager()->GetUserRunAction());
+   
+    if (runAction){
+      auto* ra = const_cast<QDRunAction*>(runAction);
+      ra->EnableCryOutput(enable);
+    }
 }
 
 void QDPrimaryGeneratorCRY::SetVerbosity(G4bool enable) {
@@ -147,12 +135,6 @@ void QDPrimaryGeneratorCRY::Initialize()
 
 // Destructor
 QDPrimaryGeneratorCRY::~QDPrimaryGeneratorCRY(){
-    auto analysisManager = G4AnalysisManager::Instance();
-    if (analysisManager) {
-        analysisManager->Write();
-        analysisManager->CloseFile();
-    }
-
     delete particleGun;
     delete gunMessenger;
 
@@ -245,21 +227,26 @@ void QDPrimaryGeneratorCRY::GeneratePrimaries(G4Event* event)
 
         vertex->SetPrimary(primary);
         event->AddPrimaryVertex(vertex);
+        // const auto* runAction = dynamic_cast<const QDRunAction*>(G4RunManager::GetRunManager()->GetUserRunAction());
 
-        if (fOutputEnabled) {
-          auto analysisManager = G4AnalysisManager::Instance();
 
-          analysisManager->FillNtupleDColumn(0, timeSimulated);
-          analysisManager->FillNtupleIColumn(1, event->GetEventID());
-          analysisManager->FillNtupleSColumn(2, pName);
-          analysisManager->FillNtupleDColumn(3, (*particle)->ke());
-          analysisManager->FillNtupleDColumn(4, dir.x());
-          analysisManager->FillNtupleDColumn(5, dir.y());
-          analysisManager->FillNtupleDColumn(6, dir.z());
-          analysisManager->FillNtupleDColumn(7, pos.x() / mm); // o usa directamente m
-          analysisManager->FillNtupleDColumn(8, pos.y() / mm);
-          analysisManager->FillNtupleDColumn(9, pos.z() / mm);
-        }
+        // if (fOutputEnabled) {
+        //   auto analysisManager = G4AnalysisManager::Instance();
+        //   G4int ntId = runAction->GetNtCryId();
+
+        //   analysisManager->FillNtupleDColumn(0, timeSimulated);
+        //   analysisManager->FillNtupleIColumn(1, event->GetEventID());
+        //   analysisManager->FillNtupleSColumn(2, pName);
+        //   analysisManager->FillNtupleDColumn(3, (*particle)->ke());
+        //   analysisManager->FillNtupleDColumn(4, dir.x());
+        //   analysisManager->FillNtupleDColumn(5, dir.y());
+        //   analysisManager->FillNtupleDColumn(6, dir.z());
+        //   analysisManager->FillNtupleDColumn(7, pos.x() / mm); // o usa directamente m
+        //   analysisManager->FillNtupleDColumn(8, pos.y() / mm);
+        //   analysisManager->FillNtupleDColumn(9, pos.z() / mm);
+
+        //   analysisManager->AddNtupleRow(ntId);
+        // }
 
         // particleGun->SetParticleMomentumDirection(dir);
         // particleGun->SetParticlePosition(pos);

@@ -5,7 +5,7 @@ QDDetectorConstruction::QDDetectorConstruction()
 : flogicBar1(nullptr), 
   flogicBar2(nullptr), 
   flogicSiPM(nullptr),
-  fMode(SimulationMode::INTERNAL),
+  fMode(SimulationMode::PARAMETERIZED),
   fMessenger(nullptr)  
 {
 
@@ -95,7 +95,6 @@ void QDDetectorConstruction::UpdateGeometry() {
     CleanupGeometry();
     G4RunManager::GetRunManager()->DefineWorldVolume(this->Construct());
 }
-
 
 void QDDetectorConstruction::DefineScintillatorMaterials() {
     G4NistManager *nist = G4NistManager::Instance();
@@ -451,11 +450,13 @@ G4VPhysicalVolume *QDDetectorConstruction::Construct(){ // we are defining here 
 
 void QDDetectorConstruction::ConstructSDandField(){
 
+    G4cout << "Debug: Setting up sensitive detectors" << G4endl;
+
     if (!flogicBar1 || !flogicBar2) {
         G4Exception("QDDetectorConstruction::ConstructSDandField()",
                    "MyCode0",
                    FatalException,
-                   "Logical volumes not initialized");
+                   "Logical bar volumes not initialized");
         return;
     };
 
@@ -491,11 +492,12 @@ void QDDetectorConstruction::ConstructSDandField(){
     }
     if (fMode == SimulationMode::PARAMETERIZED || fMode == SimulationMode::BOTH) {
 
-        fSensitiveBarDetector = new QDSensitiveBarDetector("/SD/Bar");
+        fSensitiveBarDetector = new QDSensitiveBarDetector("/SD/Bar", "barCollection");
         sdManager -> AddNewDetector(fSensitiveBarDetector);
 
         flogicBar1 -> SetSensitiveDetector(fSensitiveBarDetector);
         flogicBar2 -> SetSensitiveDetector(fSensitiveBarDetector);
+        G4cout << "Debug: Sensitive detector attached to logicBar" << G4endl;
        
     }
 

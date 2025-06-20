@@ -4,6 +4,7 @@
 #include "G4VUserActionInitialization.hh"
 #include "QDPrimaryGenerator.hh"
 #include "QDRunAction.hh"
+#include "QDEventAction.hh"
 
 class QDActionInitialization : public G4VUserActionInitialization{
 
