@@ -16,5 +16,6 @@ void QDActionInitialization::Build() const{
 
     SetUserAction(new QDPrimaryGenerator());
     SetUserAction(new QDRunAction());
+    SetUserAction(new QDEventAction());
 
 }

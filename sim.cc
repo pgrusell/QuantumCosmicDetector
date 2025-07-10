@@ -6,6 +6,7 @@
 #include "G4VisManager.hh"
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
+#include "G4AnalysisManager.hh"
 
 #include "QDPhysicsList.hh"
 #include "QDDetectorConstruction.hh"
