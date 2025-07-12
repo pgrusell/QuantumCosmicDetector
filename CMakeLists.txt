@@ -43,10 +43,7 @@ file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
 # Copy macro and CRY setup files to the build directory.
 # This allows running the executable directly from the build directory.
 
-set(MACRO_FILES
-  vis.mac
-  default.cry.setup
-)
+file(GLOB MACRO_FILES "${CMAKE_SOURCE_DIR}/macros/*.mac" "${CMAKE_SOURCE_DIR}/macros/default.cry.setup")
 
 foreach(file ${MACRO_FILES})
   configure_file(

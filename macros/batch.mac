@@ -1,0 +1,10 @@
+/control/verbose 2
+/run/verbose 2
+
+/run/geometryModified
+/run/initialize
+
+/CRY/output false
+/CRY/setVerbosity true 
+
+/run/beamOn 10
