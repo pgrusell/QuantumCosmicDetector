@@ -23,4 +23,10 @@ jobs:
             -v $(pwd):/app \
             -w /app \
             geant4-local \
-            bash -c "mkdir -p build && cd build && cmake .. && make -j$(nproc) && ./sim ../macros/batch.mac"
+            bash -c "\
+              make -C external/cry* clean && \
+              make -C external/cry* && \
+              mkdir -p build && cd build && \
+              cmake .. && \
+              make -j$(nproc) && \
+              ./sim ../macros/batch.mac"
