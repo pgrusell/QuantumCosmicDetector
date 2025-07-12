@@ -4,7 +4,4 @@
 /run/geometryModified
 /run/initialize
 
-/CRY/output false
-/CRY/setVerbosity true 
-
-/run/beamOn 10
+/run/beamOn 100
