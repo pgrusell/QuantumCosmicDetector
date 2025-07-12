@@ -1,0 +1,26 @@
+name: Build and Test with Docker
+
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ dev ]
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t geant4-local -f docker/Dockerfile .
+
+      - name: Run simulation inside Docker container
+        run: |
+          docker run --rm \
+            -v $(pwd):/app \
+            -w /app \
+            geant4-local \
+            bash -c "mkdir -p build && cd build && cmake .. && make -j$(nproc) && ./sim ../macros/batch.mac"
