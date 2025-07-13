@@ -41,5 +41,15 @@ ENV PATH=${G4INSTALL}/bin:${PATH}
 ENV LD_LIBRARY_PATH=${G4INSTALL}/lib:${LD_LIBRARY_PATH}
 RUN echo "source /usr/local/geant4/bin/geant4.sh" >> /etc/bash.bashrc
 
-# run the macro
-ENTRYPOINT ["bash"]
+# copy the project
+WORKDIR /app
+COPY . .
+
+# compilation and test of the sim
+RUN mkdir -p external/cry_v1.7/lib && \
+    make -C external/cry_v1.7 clean && \
+    make -C external/cry_v1.7 && \
+    mkdir -p build && cd build && \
+    cmake .. && \
+    make -j$(nproc)
+#mkdir output && ./sim ../macros/batch.mac

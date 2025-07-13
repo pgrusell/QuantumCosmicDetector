@@ -1,4 +1,4 @@
-name: Build and Test with Docker
+name: Build and Run with Docker (in-build)
 
 on:
   push:
@@ -7,26 +7,29 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-run:
+  build-inside-docker:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Build Docker image
-        run: docker build -t geant4-local -f docker/Dockerfile .
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Run simulation inside Docker container
-        run: |
-          docker run --rm \
-            -v $(pwd):/app \
-            -w /app \
-            geant4-local \
-            bash -c "\
-              make -C external/cry* clean && \
-              make -C external/cry* && \
-              mkdir -p build && cd build && \
-              cmake .. && \
-              make -j$(nproc) && \
-              ./sim ../macros/batch.mac"
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build and run inside Dockerfile
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile
+          platforms: linux/amd64
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
